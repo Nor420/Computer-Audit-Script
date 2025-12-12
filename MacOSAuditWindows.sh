@@ -4,19 +4,48 @@
 #Owner: Ron Mabulay
 #Date: December 13, 2025
 
-$Hostname=$(scutil --get ComputerName)
 
 OUTPUT_DIR=~/Desktop/MacOSDecember2025Audit
 mkdir -p "$OUTPUT_DIR"
 
-touch "$OUTPUT_DIR/SystemInfo.txt"
+hostname=$(scutil --get ComputerName)
 
-system_profiler SPHardwareDataType SPSoftwareDataType SPNetworkDataType >> "$OUTPUT_DIR/SystemInfo.txt"
+echo "$hostname" > "$OUTPUT_DIR/hostname.txt"
 
-touch "$OUTPUT_DIR/Hostname.txt"
+SYSTEMINFO_FILE="OUTPUT_DIR/systeminfo.txt"
 
-system_profiler SPHardwareDataType | grep "Computer Name" | awk -F: '{print $2}' | xargs >> "$OUTPUT_DIR/Hostname.txt"
+{
+    echo "===== System Information ====="
+    system_profiler SPSoftwareDataType SPHardwareDataType SPStorageDataType SPAudioDataType SPNetworkDataType SPDisplaysDataType
+    echo ""
 
+    echo "===== Installed Applications ====="
+    ls /Applications
+    echo ""
+
+    echo "===== User Accounts ====="
+    dscl . list /Users
+    echo ""
+
+    echo "===== Running Processes ====="
+    ps aux
+    echo ""
+
+    echo "===== Network Configuration ====="
+    ifconfig
+    echo ""
+
+    echo "===== Firewall Status ====="
+    /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
+    echo ""
+
+    echo "===== Security Settings ====="
+    spctl --status
+    echo ""
+
+    echo "===== Recent System Logs ====="
+    log show --last 1d
+} > "$SYSTEMINFO_FILE"
 
 
 
